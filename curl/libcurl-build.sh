@@ -15,6 +15,8 @@
 
 set -e
 
+export CMAKE_CXX_COMPILER_LAUNCHER="ccache"
+
 # Formatting
 default="\033[39m"
 wihte="\033[97m"
@@ -190,7 +192,7 @@ if ! (type "pkg-config" > /dev/null 2>&1 ) ; then
 		echo -e "${alert}** FATAL ERROR: pkg-config failed to install - exiting.${normal}"
 		exit 1
 	fi
-fi 
+fi
 
 buildMac()
 {
@@ -200,7 +202,7 @@ buildMac()
 	if [ $nohttp2 == "1" ]; then
 		NGHTTP2CFG="--with-nghttp2=${NGHTTP2}/Mac/${ARCH}"
 		NGHTTP2LIB="-L${NGHTTP2}/Mac/${ARCH}/lib"
-	else 
+	else
 		NGHTTP2CFG="--without-nghttp2"
 		NGHTTP2LIB=""
 	fi
@@ -248,7 +250,7 @@ buildMac()
 
 	pushd . > /dev/null
 	cd "${CURL_VERSION}"
-	./configure -prefix="/tmp/${CURL_VERSION}-${ARCH}" $CONF_FLAGS --with-ssl=${OPENSSL}/Mac ${NGHTTP2CFG} --host=${HOST} &> "/tmp/${CURL_VERSION}-${ARCH}.log"
+	./configure --disable-ldap -prefix="/tmp/${CURL_VERSION}-${ARCH}" $CONF_FLAGS --with-ssl=${OPENSSL}/Mac ${NGHTTP2CFG} --host=${HOST} &> "/tmp/${CURL_VERSION}-${ARCH}.log"
 
 	make -j${CORES} >> "/tmp/${CURL_VERSION}-${ARCH}.log" 2>&1
 	make install >> "/tmp/${CURL_VERSION}-${ARCH}.log" 2>&1
@@ -286,7 +288,7 @@ buildCatalyst()
 	if [ $nohttp2 == "1" ]; then
 		NGHTTP2CFG="--with-nghttp2=${NGHTTP2}/Catalyst/${ARCH}"
 		NGHTTP2LIB="-L${NGHTTP2}/Catalyst/${ARCH}/lib"
-	else 
+	else
 		NGHTTP2CFG="--without-nghttp2"
 		NGHTTP2LIB=""
 	fi
@@ -305,7 +307,7 @@ buildCatalyst()
 	else
 		./configure -prefix="/tmp/${CURL_VERSION}-catalyst-${ARCH}-${BITCODE}" $CONF_FLAGS --with-ssl=${OPENSSL}/catalyst ${NGHTTP2CFG} --host="${ARCH}-apple-darwin" &> "/tmp/${CURL_VERSION}-catalyst-${ARCH}-${BITCODE}.log"
 	fi
-	
+
 	make -j${CORES} >> "/tmp/${CURL_VERSION}-catalyst-${ARCH}-${BITCODE}.log" 2>&1
 	make install >> "/tmp/${CURL_VERSION}-catalyst-${ARCH}-${BITCODE}.log" 2>&1
 	make clean >> "/tmp/${CURL_VERSION}-catalyst-${ARCH}-${BITCODE}.log" 2>&1
@@ -333,7 +335,7 @@ buildIOS()
 	if [ $nohttp2 == "1" ]; then
 		NGHTTP2CFG="--with-nghttp2=${NGHTTP2}/${PLATFORMDIR}/${ARCH}"
 		NGHTTP2LIB="-L${NGHTTP2}/${PLATFORMDIR}/${ARCH}/lib"
-	else 
+	else
 		NGHTTP2CFG="--without-nghttp2"
 		NGHTTP2LIB=""
 	fi
@@ -380,7 +382,7 @@ buildIOSsim()
 	if [ $nohttp2 == "1" ]; then
 		NGHTTP2CFG="--with-nghttp2=${NGHTTP2}/${PLATFORMDIR}/${ARCH}"
 		NGHTTP2LIB="-L${NGHTTP2}/${PLATFORMDIR}/${ARCH}/lib"
-	else 
+	else
 		NGHTTP2CFG="--without-nghttp2"
 		NGHTTP2LIB=""
 	fi
@@ -393,7 +395,7 @@ buildIOSsim()
 		RUNTARGET="-target ${ARCH}-apple-ios${IOS_MIN_SDK_VERSION}-simulator"
 	fi
 
-	# set up exports for build 
+	# set up exports for build
 	export $PLATFORM
 	export CROSS_TOP="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
 	export CROSS_SDK="${PLATFORM}${IOS_SDK_VERSION}.sdk"
@@ -440,7 +442,7 @@ buildTVOS()
 	if [ $nohttp2 == "1" ]; then
 		NGHTTP2CFG="--with-nghttp2=${NGHTTP2}/tvOS/${ARCH}"
 		NGHTTP2LIB="-L${NGHTTP2}/tvOS/${ARCH}/lib"
-	else 
+	else
 		NGHTTP2CFG="--without-nghttp2"
 		NGHTTP2LIB=""
 	fi
@@ -488,7 +490,7 @@ buildTVOSsim()
 	if [ $nohttp2 == "1" ]; then
 		NGHTTP2CFG="--with-nghttp2=${NGHTTP2}/${PLATFORMDIR}/${ARCH}"
 		NGHTTP2LIB="-L${NGHTTP2}/${PLATFORMDIR}/${ARCH}/lib"
-	else 
+	else
 		NGHTTP2CFG="--without-nghttp2"
 		NGHTTP2LIB=""
 	fi
@@ -570,54 +572,54 @@ lipo \
 	"/tmp/${CURL_VERSION}-arm64/lib/libcurl.a" \
 	-create -output lib/libcurl_Mac.a
 
-if [ $catalyst == "1" ]; then
-echo -e "${bold}Building Catalyst libraries${dim}"
-buildCatalyst "x86_64" "bitcode"
-buildCatalyst "arm64" "bitcode"
+# if [ $catalyst == "1" ]; then
+# echo -e "${bold}Building Catalyst libraries${dim}"
+# buildCatalyst "x86_64" "bitcode"
+# buildCatalyst "arm64" "bitcode"
 
-lipo \
-	"/tmp/${CURL_VERSION}-catalyst-x86_64-bitcode/lib/libcurl.a" \
-	"/tmp/${CURL_VERSION}-catalyst-arm64-bitcode/lib/libcurl.a" \
-	-create -output lib/libcurl_Catalyst.a
-fi
+# lipo \
+# 	"/tmp/${CURL_VERSION}-catalyst-x86_64-bitcode/lib/libcurl.a" \
+# 	"/tmp/${CURL_VERSION}-catalyst-arm64-bitcode/lib/libcurl.a" \
+# 	-create -output lib/libcurl_Catalyst.a
+# fi
 
-if ! [[ "${NOBITCODE}" == "yes" ]]; then
-    BITCODE="bitcode"
-else
-    BITCODE="nobitcode"
-fi
+# if ! [[ "${NOBITCODE}" == "yes" ]]; then
+#     BITCODE="bitcode"
+# else
+#     BITCODE="nobitcode"
+# fi
 
-echo -e "${bold}Building iOS libraries (${BITCODE})${dim}"
-buildIOS "armv7" "${BITCODE}"
-buildIOS "armv7s" "${BITCODE}"
-buildIOS "arm64" "${BITCODE}"
-buildIOS "arm64e" "${BITCODE}"
+# echo -e "${bold}Building iOS libraries (${BITCODE})${dim}"
+# buildIOS "armv7" "${BITCODE}"
+# buildIOS "armv7s" "${BITCODE}"
+# buildIOS "arm64" "${BITCODE}"
+# buildIOS "arm64e" "${BITCODE}"
 
-lipo \
-	"/tmp/${CURL_VERSION}-iOS-armv7-${BITCODE}/lib/libcurl.a" \
-	"/tmp/${CURL_VERSION}-iOS-armv7s-${BITCODE}/lib/libcurl.a" \
-	"/tmp/${CURL_VERSION}-iOS-arm64-${BITCODE}/lib/libcurl.a" \
-	"/tmp/${CURL_VERSION}-iOS-arm64e-${BITCODE}/lib/libcurl.a" \
-	-create -output lib/libcurl_iOS.a
+# lipo \
+# 	"/tmp/${CURL_VERSION}-iOS-armv7-${BITCODE}/lib/libcurl.a" \
+# 	"/tmp/${CURL_VERSION}-iOS-armv7s-${BITCODE}/lib/libcurl.a" \
+# 	"/tmp/${CURL_VERSION}-iOS-arm64-${BITCODE}/lib/libcurl.a" \
+# 	"/tmp/${CURL_VERSION}-iOS-arm64e-${BITCODE}/lib/libcurl.a" \
+# 	-create -output lib/libcurl_iOS.a
 
-buildIOSsim "i386" "${BITCODE}"
-buildIOSsim "x86_64" "${BITCODE}"
-buildIOSsim "arm64" "${BITCODE}"
+# buildIOSsim "i386" "${BITCODE}"
+# buildIOSsim "x86_64" "${BITCODE}"
+# buildIOSsim "arm64" "${BITCODE}"
 
-lipo \
-	"/tmp/${CURL_VERSION}-iOS-simulator-i386-${BITCODE}/lib/libcurl.a" \
-	"/tmp/${CURL_VERSION}-iOS-simulator-x86_64-${BITCODE}/lib/libcurl.a" \
-	"/tmp/${CURL_VERSION}-iOS-simulator-arm64-${BITCODE}/lib/libcurl.a" \
-	-create -output lib/libcurl_iOS-simulator.a
+# lipo \
+# 	"/tmp/${CURL_VERSION}-iOS-simulator-i386-${BITCODE}/lib/libcurl.a" \
+# 	"/tmp/${CURL_VERSION}-iOS-simulator-x86_64-${BITCODE}/lib/libcurl.a" \
+# 	"/tmp/${CURL_VERSION}-iOS-simulator-arm64-${BITCODE}/lib/libcurl.a" \
+# 	-create -output lib/libcurl_iOS-simulator.a
 
-lipo \
-	"/tmp/${CURL_VERSION}-iOS-armv7-${BITCODE}/lib/libcurl.a" \
-	"/tmp/${CURL_VERSION}-iOS-armv7s-${BITCODE}/lib/libcurl.a" \
-	"/tmp/${CURL_VERSION}-iOS-arm64-${BITCODE}/lib/libcurl.a" \
-	"/tmp/${CURL_VERSION}-iOS-arm64e-${BITCODE}/lib/libcurl.a" \
-	"/tmp/${CURL_VERSION}-iOS-simulator-i386-${BITCODE}/lib/libcurl.a" \
-	"/tmp/${CURL_VERSION}-iOS-simulator-x86_64-${BITCODE}/lib/libcurl.a" \
-	-create -output lib/libcurl_iOS-fat.a
+# lipo \
+# 	"/tmp/${CURL_VERSION}-iOS-armv7-${BITCODE}/lib/libcurl.a" \
+# 	"/tmp/${CURL_VERSION}-iOS-armv7s-${BITCODE}/lib/libcurl.a" \
+# 	"/tmp/${CURL_VERSION}-iOS-arm64-${BITCODE}/lib/libcurl.a" \
+# 	"/tmp/${CURL_VERSION}-iOS-arm64e-${BITCODE}/lib/libcurl.a" \
+# 	"/tmp/${CURL_VERSION}-iOS-simulator-i386-${BITCODE}/lib/libcurl.a" \
+# 	"/tmp/${CURL_VERSION}-iOS-simulator-x86_64-${BITCODE}/lib/libcurl.a" \
+# 	-create -output lib/libcurl_iOS-fat.a
 
 
 # if [[ "${NOBITCODE}" == "yes" ]]; then
@@ -639,32 +641,32 @@ lipo \
 # 		-create -output lib/libcurl_iOS_nobitcode.a
 # fi
 
-echo -e "${bold}Building tvOS libraries${dim}"
-buildTVOS "arm64" "${BITCODE}"
+# echo -e "${bold}Building tvOS libraries${dim}"
+# buildTVOS "arm64" "${BITCODE}"
 
-lipo \
-	"/tmp/${CURL_VERSION}-tvOS-arm64/lib/libcurl.a" \
-	-create -output lib/libcurl_tvOS.a
+# lipo \
+# 	"/tmp/${CURL_VERSION}-tvOS-arm64/lib/libcurl.a" \
+# 	-create -output lib/libcurl_tvOS.a
 
-buildTVOSsim "x86_64" "${BITCODE}"
-buildTVOSsim "arm64" "${BITCODE}"
+# buildTVOSsim "x86_64" "${BITCODE}"
+# buildTVOSsim "arm64" "${BITCODE}"
 
-lipo \
-	"/tmp/${CURL_VERSION}-tvOS-arm64/lib/libcurl.a" \
-	"/tmp/${CURL_VERSION}-tvOS-simulator-x86_64/lib/libcurl.a" \
-	-create -output lib/libcurl_tvOS-fat.a
+# lipo \
+# 	"/tmp/${CURL_VERSION}-tvOS-arm64/lib/libcurl.a" \
+# 	"/tmp/${CURL_VERSION}-tvOS-simulator-x86_64/lib/libcurl.a" \
+# 	-create -output lib/libcurl_tvOS-fat.a
 
-lipo \
-	"/tmp/${CURL_VERSION}-tvOS-simulator-x86_64/lib/libcurl.a" \
-	"/tmp/${CURL_VERSION}-tvOS-simulator-arm64/lib/libcurl.a" \
-	-create -output lib/libcurl_tvOS-simulator.a
+# lipo \
+# 	"/tmp/${CURL_VERSION}-tvOS-simulator-x86_64/lib/libcurl.a" \
+# 	"/tmp/${CURL_VERSION}-tvOS-simulator-arm64/lib/libcurl.a" \
+# 	-create -output lib/libcurl_tvOS-simulator.a
 
-echo -e "${bold}Cleaning up${dim}"
-rm -rf /tmp/${CURL_VERSION}-*
-rm -rf ${CURL_VERSION}
+# echo -e "${bold}Cleaning up${dim}"
+# rm -rf /tmp/${CURL_VERSION}-*
+# rm -rf ${CURL_VERSION}
 
-echo -e "${dim}Checking libraries"
-xcrun -sdk iphoneos lipo -info lib/*.a
+# echo -e "${dim}Checking libraries"
+# xcrun -sdk iphoneos lipo -info lib/*.a
 
 #reset trap
 trap - INT TERM EXIT

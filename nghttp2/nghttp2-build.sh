@@ -1,18 +1,18 @@
 #!/bin/bash
-# This script downlaods and builds the Mac, iOS and tvOS nghttp2 libraries 
+# This script downlaods and builds the Mac, iOS and tvOS nghttp2 libraries
 #
 # Credits:
 # Jason Cox, @jasonacox
-#   https://github.com/jasonacox/Build-OpenSSL-cURL 
+#   https://github.com/jasonacox/Build-OpenSSL-cURL
 #
 # NGHTTP2 - https://github.com/nghttp2/nghttp2
 #
 
-# > nghttp2 is an implementation of HTTP/2 and its header 
+# > nghttp2 is an implementation of HTTP/2 and its header
 # > compression algorithm HPACK in C
-# 
+#
 # NOTE: pkg-config is required
- 
+
 set -e
 
 # Formatting
@@ -75,7 +75,7 @@ usage ()
 	echo "         -m   compile Mac Catalyst library"
 	echo "         -u   Mac Catalyst iOS min target version (default $CATALYST_IOS)"
 	echo "         -x   disable color output"
-	echo "         -h   show usage"	
+	echo "         -h   show usage"
 	echo
 	trap - INT TERM EXIT
 	exit 127
@@ -165,7 +165,7 @@ else
 		echo -e "${alert}** FATAL ERROR: pkg-config failed to install - exiting.${normal}"
 		exit 1
 	fi
-fi 
+fi
 
 buildMac()
 {
@@ -196,7 +196,7 @@ buildMac()
 		TARGET="darwin64-arm64-cc"
 		MACOS_VER="${MACOS_ARM64_VERSION}"
 		if [ ${BUILD_MACHINE} == 'arm64' ]; then
-   			# Apple ARM Silicon Build Machine Detected 
+   			# Apple ARM Silicon Build Machine Detected
 			export CFLAGS=" -mmacosx-version-min=${MACOS_ARM64_VERSION} -arch ${ARCH} -pipe -Os -gdwarf-2 -fembed-bitcode"
 		else
 			# Apple x86_64 Build Machine Detected - cross compile
@@ -293,7 +293,7 @@ buildCatalyst()
 	else
 		./configure --disable-shared --disable-app --disable-threads --enable-lib-only --prefix="${NGHTTP2}/Catalyst/${ARCH}" --host="${ARCH}-apple-darwin" &> "/tmp/${NGHTTP2_VERSION}-catalyst-${ARCH}.log"
 	fi
-	
+
 	make -j${CORES} >> "/tmp/${NGHTTP2_VERSION}-catalyst-${ARCH}.log" 2>&1
 	make install >> "/tmp/${NGHTTP2_VERSION}-catalyst-${ARCH}.log" 2>&1
 	make clean >> "/tmp/${NGHTTP2_VERSION}-catalyst-${ARCH}.log" 2>&1
@@ -314,7 +314,7 @@ buildIOS()
 
 	pushd . > /dev/null
 	cd "${NGHTTP2_VERSION}"
-  
+
 	if [[ "${ARCH}" == "i386" || "${ARCH}" == "x86_64" ]]; then
 		PLATFORM="iPhoneSimulator"
 	else
@@ -326,7 +326,7 @@ buildIOS()
         else
                 CC_BITCODE_FLAG="-fembed-bitcode"
         fi
-  
+
 	export $PLATFORM
 	export CROSS_TOP="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
 	export CROSS_SDK="${PLATFORM}${IOS_SDK_VERSION}.sdk"
@@ -334,7 +334,7 @@ buildIOS()
 	export CC="${BUILD_TOOLS}/usr/bin/gcc"
 	export CFLAGS="-arch ${ARCH} -pipe -Os -gdwarf-2 -isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} -miphoneos-version-min=${IOS_MIN_SDK_VERSION} ${CC_BITCODE_FLAG}"
 	export LDFLAGS="-arch ${ARCH} -isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK}"
-   
+
 	echo -e "${subbold}Building ${NGHTTP2_VERSION} for ${PLATFORM} ${IOS_SDK_VERSION} ${archbold}${ARCH}${dim} (iOS ${IOS_MIN_SDK_VERSION})"
 	if [[ "${ARCH}" == "arm64" || "${ARCH}" == "arm64e"  ]]; then
 		./configure --disable-shared --disable-app --disable-threads --enable-lib-only  --prefix="${NGHTTP2}/iOS/${ARCH}" --host="arm-apple-darwin" &> "/tmp/${NGHTTP2_VERSION}-iOS-${ARCH}-${BITCODE}.log"
@@ -362,7 +362,7 @@ buildIOSsim()
 
 	pushd . > /dev/null
 	cd "${NGHTTP2_VERSION}"
-  
+
   	PLATFORM="iPhoneSimulator"
 	export $PLATFORM
 
@@ -380,7 +380,7 @@ buildIOSsim()
 	else
 			CC_BITCODE_FLAG="-fembed-bitcode"
 	fi
-  
+
 	export $PLATFORM
 	export CROSS_TOP="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
 	export CROSS_SDK="${PLATFORM}${IOS_SDK_VERSION}.sdk"
@@ -388,7 +388,7 @@ buildIOSsim()
 	export CC="${BUILD_TOOLS}/usr/bin/gcc"
 	export CFLAGS="-arch ${ARCH} -pipe -Os -gdwarf-2 -isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} -miphoneos-version-min=${MIPHONEOS} ${CC_BITCODE_FLAG} ${RUNTARGET}  "
 	export LDFLAGS="-arch ${ARCH} -isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK}"
-   
+
 	echo -e "${subbold}Building ${NGHTTP2_VERSION} for ${PLATFORM} ${IOS_SDK_VERSION} ${archbold}${ARCH}${dim} (iOS ${IOS_MIN_SDK_VERSION})"
 	if [[ "${ARCH}" == "arm64" || "${ARCH}" == "arm64e"  ]]; then
 	./configure --disable-shared --disable-app --disable-threads --enable-lib-only  --prefix="${NGHTTP2}/iOS-simulator/${ARCH}" --host="arm-apple-darwin" &> "/tmp/${NGHTTP2_VERSION}-iOS-${ARCH}-${BITCODE}.log"
@@ -415,7 +415,7 @@ buildTVOS()
 
 	pushd . > /dev/null
 	cd "${NGHTTP2_VERSION}"
-  
+
 	if [[ "${ARCH}" == "i386" || "${ARCH}" == "x86_64" ]]; then
 		PLATFORM="AppleTVSimulator"
 	else
@@ -430,7 +430,7 @@ buildTVOS()
 	export CFLAGS="-arch ${ARCH} -pipe -Os -gdwarf-2 -isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} -mtvos-version-min=${TVOS_MIN_SDK_VERSION} -fembed-bitcode"
 	export LDFLAGS="-arch ${ARCH} -isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} ${NGHTTP2LIB}"
 	export LC_CTYPE=C
-  
+
 	echo -e "${subbold}Building ${NGHTTP2_VERSION} for ${PLATFORM} ${TVOS_SDK_VERSION} ${archbold}${ARCH}${dim} (tvOS ${TVOS_MIN_SDK_VERSION})"
 
 	# Patch apps/speed.c to not use fork() since it's not available on tvOS
@@ -439,7 +439,7 @@ buildTVOS()
 	# Patch Configure to build for tvOS, not iOS
 	# LANG=C sed -i -- 's/D\_REENTRANT\:iOS/D\_REENTRANT\:tvOS/' "./Configure"
 	# chmod u+x ./Configure
-	
+
 	./configure --disable-shared --disable-app --disable-threads --enable-lib-only  --prefix="${NGHTTP2}/tvOS/${ARCH}" --host="arm-apple-darwin" &> "/tmp/${NGHTTP2_VERSION}-tvOS-${ARCH}.log"
 	LANG=C sed -i -- 's/define HAVE_FORK 1/define HAVE_FORK 0/' "config.h"
 
@@ -515,15 +515,15 @@ buildTVOSsim()
 echo -e "${bold}Cleaning up${dim}"
 rm -rf include/nghttp2/* lib/*
 rm -fr Mac
-rm -fr iOS
-rm -fr tvOS
-rm -fr Catalyst
+# rm -fr iOS
+# rm -fr tvOS
+# rm -fr Catalyst
 
 mkdir -p lib
 mkdir -p Mac
-mkdir -p iOS
-mkdir -p tvOS
-mkdir -p Catalyst
+# mkdir -p iOS
+# mkdir -p tvOS
+# mkdir -p Catalyst
 
 rm -rf "/tmp/${NGHTTP2_VERSION}-*"
 rm -rf "/tmp/${NGHTTP2_VERSION}-*.log"
@@ -549,68 +549,68 @@ lipo \
 		"${NGHTTP2}/Mac/arm64/lib/libnghttp2.a" \
         -create -output "${NGHTTP2}/lib/libnghttp2_Mac.a"
 
-if [ $catalyst == "1" ]; then
-echo -e "${bold}Building Catalyst libraries${dim}"
-buildCatalyst "x86_64"
-buildCatalyst "arm64"
+# if [ $catalyst == "1" ]; then
+# echo -e "${bold}Building Catalyst libraries${dim}"
+# buildCatalyst "x86_64"
+# buildCatalyst "arm64"
 
-lipo \
-        "${NGHTTP2}/Catalyst/x86_64/lib/libnghttp2.a" \
-		"${NGHTTP2}/Catalyst/arm64/lib/libnghttp2.a" \
-        -create -output "${NGHTTP2}/lib/libnghttp2_Catalyst.a"
-fi
+# lipo \
+#         "${NGHTTP2}/Catalyst/x86_64/lib/libnghttp2.a" \
+# 		"${NGHTTP2}/Catalyst/arm64/lib/libnghttp2.a" \
+#         -create -output "${NGHTTP2}/lib/libnghttp2_Catalyst.a"
+# fi
 
-echo -e "${bold}Building iOS libraries (bitcode)${dim}"
-buildIOS "armv7" "bitcode"
-buildIOS "armv7s" "bitcode"
-buildIOS "arm64" "bitcode"
-buildIOS "arm64e" "bitcode"
+# echo -e "${bold}Building iOS libraries (bitcode)${dim}"
+# buildIOS "armv7" "bitcode"
+# buildIOS "armv7s" "bitcode"
+# buildIOS "arm64" "bitcode"
+# buildIOS "arm64e" "bitcode"
 
-buildIOSsim "x86_64" "bitcode"
-buildIOSsim "arm64" "bitcode"
-buildIOSsim "i386" "bitcode"
+# buildIOSsim "x86_64" "bitcode"
+# buildIOSsim "arm64" "bitcode"
+# buildIOSsim "i386" "bitcode"
 
-lipo \
-	"${NGHTTP2}/iOS/armv7/lib/libnghttp2.a" \
-	"${NGHTTP2}/iOS/armv7s/lib/libnghttp2.a" \
-	"${NGHTTP2}/iOS-simulator/i386/lib/libnghttp2.a" \
-	"${NGHTTP2}/iOS/arm64/lib/libnghttp2.a" \
-	"${NGHTTP2}/iOS/arm64e/lib/libnghttp2.a" \
-	"${NGHTTP2}/iOS-simulator/x86_64/lib/libnghttp2.a" \
-	-create -output "${NGHTTP2}/lib/libnghttp2_iOS-fat.a"
+# lipo \
+# 	"${NGHTTP2}/iOS/armv7/lib/libnghttp2.a" \
+# 	"${NGHTTP2}/iOS/armv7s/lib/libnghttp2.a" \
+# 	"${NGHTTP2}/iOS-simulator/i386/lib/libnghttp2.a" \
+# 	"${NGHTTP2}/iOS/arm64/lib/libnghttp2.a" \
+# 	"${NGHTTP2}/iOS/arm64e/lib/libnghttp2.a" \
+# 	"${NGHTTP2}/iOS-simulator/x86_64/lib/libnghttp2.a" \
+# 	-create -output "${NGHTTP2}/lib/libnghttp2_iOS-fat.a"
 
-lipo \
-	"${NGHTTP2}/iOS/armv7/lib/libnghttp2.a" \
-	"${NGHTTP2}/iOS/armv7s/lib/libnghttp2.a" \
-	"${NGHTTP2}/iOS/arm64/lib/libnghttp2.a" \
-	"${NGHTTP2}/iOS/arm64e/lib/libnghttp2.a" \
-	-create -output "${NGHTTP2}/lib/libnghttp2_iOS.a"
+# lipo \
+# 	"${NGHTTP2}/iOS/armv7/lib/libnghttp2.a" \
+# 	"${NGHTTP2}/iOS/armv7s/lib/libnghttp2.a" \
+# 	"${NGHTTP2}/iOS/arm64/lib/libnghttp2.a" \
+# 	"${NGHTTP2}/iOS/arm64e/lib/libnghttp2.a" \
+# 	-create -output "${NGHTTP2}/lib/libnghttp2_iOS.a"
 
-lipo \
-	"${NGHTTP2}/iOS-simulator/i386/lib/libnghttp2.a" \
-	"${NGHTTP2}/iOS-simulator/x86_64/lib/libnghttp2.a" \
-	"${NGHTTP2}/iOS-simulator/arm64/lib/libnghttp2.a" \
-	-create -output "${NGHTTP2}/lib/libnghttp2_iOS-simulator.a"
+# lipo \
+# 	"${NGHTTP2}/iOS-simulator/i386/lib/libnghttp2.a" \
+# 	"${NGHTTP2}/iOS-simulator/x86_64/lib/libnghttp2.a" \
+# 	"${NGHTTP2}/iOS-simulator/arm64/lib/libnghttp2.a" \
+# 	-create -output "${NGHTTP2}/lib/libnghttp2_iOS-simulator.a"
 
-echo -e "${bold}Building tvOS libraries${dim}"
-buildTVOS "arm64"
+# echo -e "${bold}Building tvOS libraries${dim}"
+# buildTVOS "arm64"
 
-lipo \
-        "${NGHTTP2}/tvOS/arm64/lib/libnghttp2.a" \
-        -create -output "${NGHTTP2}/lib/libnghttp2_tvOS.a"
+# lipo \
+#         "${NGHTTP2}/tvOS/arm64/lib/libnghttp2.a" \
+#         -create -output "${NGHTTP2}/lib/libnghttp2_tvOS.a"
 
-buildTVOSsim "x86_64"
-buildTVOSsim "arm64"
+# buildTVOSsim "x86_64"
+# buildTVOSsim "arm64"
 
-lipo \
-        "${NGHTTP2}/tvOS/arm64/lib/libnghttp2.a" \
-        "${NGHTTP2}/tvOS-simulator/x86_64/lib/libnghttp2.a" \
-        -create -output "${NGHTTP2}/lib/libnghttp2_tvOS-fat.a"
+# lipo \
+#         "${NGHTTP2}/tvOS/arm64/lib/libnghttp2.a" \
+#         "${NGHTTP2}/tvOS-simulator/x86_64/lib/libnghttp2.a" \
+#         -create -output "${NGHTTP2}/lib/libnghttp2_tvOS-fat.a"
 
-lipo \
-	"${NGHTTP2}/tvOS-simulator/x86_64/lib/libnghttp2.a" \
-	"${NGHTTP2}/tvOS-simulator/arm64/lib/libnghttp2.a" \
-	-create -output "${NGHTTP2}/lib/libnghttp2_tvOS-simulator.a"
+# lipo \
+# 	"${NGHTTP2}/tvOS-simulator/x86_64/lib/libnghttp2.a" \
+# 	"${NGHTTP2}/tvOS-simulator/arm64/lib/libnghttp2.a" \
+# 	-create -output "${NGHTTP2}/lib/libnghttp2_tvOS-simulator.a"
 
 echo -e "${bold}Cleaning up${dim}"
 rm -rf /tmp/${NGHTTP2_VERSION}-*
@@ -620,4 +620,3 @@ rm -rf ${NGHTTP2_VERSION}
 trap - INT TERM EXIT
 
 echo -e "${normal}Done"
-

@@ -8,6 +8,8 @@
 
 set -e
 
+export CMAKE_CXX_COMPILER_LAUNCHER="ccache"
+
 # Custom build options
 CUSTOMCONFIG="enable-ssl-trace"
 
@@ -437,20 +439,20 @@ buildTVOSsim()
 # rm -rf include/openssl/* lib/*
 
 mkdir -p Mac/lib
-mkdir -p Catalyst/lib
-mkdir -p iOS/lib
-mkdir -p iOS-simulator/lib
-mkdir -p iOS-fat/lib
-mkdir -p tvOS-fat/lib
-mkdir -p tvOS/lib
+# mkdir -p Catalyst/lib
+# mkdir -p iOS/lib
+# mkdir -p iOS-simulator/lib
+# mkdir -p iOS-fat/lib
+# mkdir -p tvOS-fat/lib
+# mkdir -p tvOS/lib
 mkdir -p Mac/include/openssl/
-mkdir -p Catalyst/include/openssl/
-mkdir -p iOS/include/openssl/
-mkdir -p iOS-simulator/include/openssl/
-mkdir -p iOS-fat/include/openssl/
-mkdir -p tvOS/include/openssl/
-mkdir -p tvOS-simulator/lib
-mkdir -p tvOS-simulator/include/openssl/
+# mkdir -p Catalyst/include/openssl/
+# mkdir -p iOS/include/openssl/
+# mkdir -p iOS-simulator/include/openssl/
+# mkdir -p iOS-fat/include/openssl/
+# mkdir -p tvOS/include/openssl/
+# mkdir -p tvOS-simulator/lib
+# mkdir -p tvOS-simulator/include/openssl/
 
 rm -rf "/tmp/openssl"
 rm -rf "/tmp/${OPENSSL_VERSION}-*"
@@ -503,71 +505,71 @@ lipo \
 	-create -output Mac/lib/libssl.a
 
 ## Catalyst
-if [ $catalyst == "1" ]; then
-	echo -e "${bold}Building Catalyst libraries${dim}"
-	buildCatalyst "x86_64"
-	buildCatalyst "arm64"
+# if [ $catalyst == "1" ]; then
+# 	echo -e "${bold}Building Catalyst libraries${dim}"
+# 	buildCatalyst "x86_64"
+# 	buildCatalyst "arm64"
 
-	echo -e "  ${dim}Copying headers and libraries"
-	cp /tmp/${OPENSSL_VERSION}-catalyst-x86_64/include/openssl/* Catalyst/include/openssl/
+# 	echo -e "  ${dim}Copying headers and libraries"
+# 	cp /tmp/${OPENSSL_VERSION}-catalyst-x86_64/include/openssl/* Catalyst/include/openssl/
 
-	lipo \
-		"/tmp/${OPENSSL_VERSION}-catalyst-x86_64/lib/libcrypto.a" \
-		"/tmp/${OPENSSL_VERSION}-catalyst-arm64/lib/libcrypto.a" \
-		-create -output Catalyst/lib/libcrypto.a
+# 	lipo \
+# 		"/tmp/${OPENSSL_VERSION}-catalyst-x86_64/lib/libcrypto.a" \
+# 		"/tmp/${OPENSSL_VERSION}-catalyst-arm64/lib/libcrypto.a" \
+# 		-create -output Catalyst/lib/libcrypto.a
 
-	lipo \
-		"/tmp/${OPENSSL_VERSION}-catalyst-x86_64/lib/libssl.a" \
-		"/tmp/${OPENSSL_VERSION}-catalyst-arm64/lib/libssl.a" \
-		-create -output Catalyst/lib/libssl.a
-fi
+# 	lipo \
+# 		"/tmp/${OPENSSL_VERSION}-catalyst-x86_64/lib/libssl.a" \
+# 		"/tmp/${OPENSSL_VERSION}-catalyst-arm64/lib/libssl.a" \
+# 		-create -output Catalyst/lib/libssl.a
+# fi
 
 ## tvOS
-echo -e "${bold}Building tvOS libraries${dim}"
-buildTVOS "arm64"
+# echo -e "${bold}Building tvOS libraries${dim}"
+# buildTVOS "arm64"
 
-echo -e "  ${dim}Copying headers and libraries"
-cp /tmp/${OPENSSL_VERSION}-tvOS-arm64/include/openssl/* tvOS/include/openssl/
+# echo -e "  ${dim}Copying headers and libraries"
+# cp /tmp/${OPENSSL_VERSION}-tvOS-arm64/include/openssl/* tvOS/include/openssl/
 
-lipo \
-	"/tmp/${OPENSSL_VERSION}-tvOS-arm64/lib/libcrypto.a" \
-	-create -output tvOS/lib/libcrypto.a
+# lipo \
+# 	"/tmp/${OPENSSL_VERSION}-tvOS-arm64/lib/libcrypto.a" \
+# 	-create -output tvOS/lib/libcrypto.a
 
-lipo \
-	"/tmp/${OPENSSL_VERSION}-tvOS-arm64/lib/libssl.a" \
-	-create -output tvOS/lib/libssl.a
+# lipo \
+# 	"/tmp/${OPENSSL_VERSION}-tvOS-arm64/lib/libssl.a" \
+# 	-create -output tvOS/lib/libssl.a
 
 
-echo -e "${bold}Building tvOS simulator libraries${dim}"
-buildTVOSsim "arm64"
-buildTVOSsim "x86_64"
+# echo -e "${bold}Building tvOS simulator libraries${dim}"
+# buildTVOSsim "arm64"
+# buildTVOSsim "x86_64"
 
-lipo \
-	"/tmp/${OPENSSL_VERSION}-tvOS-arm64/lib/libcrypto.a" \
-	"/tmp/${OPENSSL_VERSION}-tvOS-Simulator-x86_64/lib/libcrypto.a" \
-	-create -output tvOS-fat/lib/libcrypto.a
+# lipo \
+# 	"/tmp/${OPENSSL_VERSION}-tvOS-arm64/lib/libcrypto.a" \
+# 	"/tmp/${OPENSSL_VERSION}-tvOS-Simulator-x86_64/lib/libcrypto.a" \
+# 	-create -output tvOS-fat/lib/libcrypto.a
 
-lipo \
-	"/tmp/${OPENSSL_VERSION}-tvOS-arm64/lib/libssl.a" \
-	"/tmp/${OPENSSL_VERSION}-tvOS-Simulator-x86_64/lib/libssl.a" \
-	-create -output tvOS-fat/lib/libssl.a
+# lipo \
+# 	"/tmp/${OPENSSL_VERSION}-tvOS-arm64/lib/libssl.a" \
+# 	"/tmp/${OPENSSL_VERSION}-tvOS-Simulator-x86_64/lib/libssl.a" \
+# 	-create -output tvOS-fat/lib/libssl.a
 
-echo -e "  ${dim}Copying headers and libraries"
-cp /tmp/${OPENSSL_VERSION}-tvOS-Simulator-x86_64/include/openssl/* tvOS-simulator/include/openssl/
+# echo -e "  ${dim}Copying headers and libraries"
+# cp /tmp/${OPENSSL_VERSION}-tvOS-Simulator-x86_64/include/openssl/* tvOS-simulator/include/openssl/
 
-lipo \
-	"/tmp/${OPENSSL_VERSION}-tvOS-Simulator-arm64/lib/libcrypto.a" \
-	"/tmp/${OPENSSL_VERSION}-tvOS-Simulator-x86_64/lib/libcrypto.a" \
-	-create -output tvOS-simulator/lib/libcrypto.a
+# lipo \
+# 	"/tmp/${OPENSSL_VERSION}-tvOS-Simulator-arm64/lib/libcrypto.a" \
+# 	"/tmp/${OPENSSL_VERSION}-tvOS-Simulator-x86_64/lib/libcrypto.a" \
+# 	-create -output tvOS-simulator/lib/libcrypto.a
 
-lipo \
-	"/tmp/${OPENSSL_VERSION}-tvOS-Simulator-arm64/lib/libssl.a" \
-	"/tmp/${OPENSSL_VERSION}-tvOS-Simulator-x86_64/lib/libssl.a" \
-	-create -output tvOS-simulator/lib/libssl.a
+# lipo \
+# 	"/tmp/${OPENSSL_VERSION}-tvOS-Simulator-arm64/lib/libssl.a" \
+# 	"/tmp/${OPENSSL_VERSION}-tvOS-Simulator-x86_64/lib/libssl.a" \
+# 	-create -output tvOS-simulator/lib/libssl.a
 
-if [ $catalyst == "1" ]; then
-	libtool -no_warning_for_no_symbols -static -o openssl-ios-x86_64-maccatalyst.a Catalyst/lib/libcrypto.a Catalyst/lib/libssl.a
-fi
+# if [ $catalyst == "1" ]; then
+# 	libtool -no_warning_for_no_symbols -static -o openssl-ios-x86_64-maccatalyst.a Catalyst/lib/libcrypto.a Catalyst/lib/libssl.a
+# fi
 
 #echo -e "${bold}Cleaning up${dim}"
 rm -rf /tmp/${OPENSSL_VERSION}-*
