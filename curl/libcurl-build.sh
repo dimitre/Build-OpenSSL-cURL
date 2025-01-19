@@ -570,7 +570,7 @@ cp /tmp/${CURL_VERSION}-x86_64/include/curl/* include/curl/
 lipo \
 	"/tmp/${CURL_VERSION}-x86_64/lib/libcurl.a" \
 	"/tmp/${CURL_VERSION}-arm64/lib/libcurl.a" \
-	-create -output lib/libcurl_Mac.a
+	-create -output lib/libcurl.a
 
 # if [ $catalyst == "1" ]; then
 # echo -e "${bold}Building Catalyst libraries${dim}"
